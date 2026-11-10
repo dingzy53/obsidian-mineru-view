@@ -1,0 +1,44 @@
+{
+	"pages": [
+		{
+			"page_idx": 0,
+			"blocks": [
+				{
+					"type": "doc_title",
+					"bbox": [
+						0.34,
+						0.18,
+						0.65,
+						0.21
+					],
+					"level": 1,
+					"content": "Lorem ipsum"
+				},
+				{
+					"type": "text",
+					"bbox": [
+						0.19,
+						0.29,
+						0.81,
+						0.34
+					],
+					"content": "Dolor sit amet consectetur."
+				}
+			]
+		}
+	],
+	"metadata": {
+		"file_suffix": "pdf",
+		"producer": {
+			"name": "mineru",
+			"version": "3.4.4"
+		}
+	},
+	"extensions": {
+		"mineru": {
+			"tier": "basic",
+			"parse_mode": "txt"
+		}
+	},
+	"is_full_document": true
+}
