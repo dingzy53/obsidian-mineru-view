@@ -127,7 +127,7 @@ function normalizeDocumentV2(result: { pages?: V2Page[] }): NormalizedBox[] {
 	const boxes: NormalizedBox[] = [];
 	const pages = Array.isArray(result?.pages) ? result.pages : [];
 	for (const page of pages) {
-		const pageNumber = getPageNumber(page as RawPage);
+		const pageNumber = getPageNumber(page);
 		const blocks = Array.isArray(page?.blocks) ? page.blocks : [];
 		for (const block of blocks) {
 			walkV2Block(block, pageNumber, boxes);

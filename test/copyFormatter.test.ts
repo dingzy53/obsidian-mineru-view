@@ -17,7 +17,7 @@ function box(partial: Partial<NormalizedBox>): NormalizedBox {
 	};
 }
 
-const TABLE = '<table><tr><td>Model</td><td>BLEU</td></tr><tr><td>A &amp; B</td><td><eq>d_{model}</eq> | 5%</td></tr></table>';
+const TABLE = '<table><tr><td>Model</td><td>BLEU</td></tr><tr><td>A &amp; B</td><td><eq>d_{model} \\cdot 2</eq> | 5%</td></tr></table>';
 
 describe("formulas", () => {
 	it("wraps a display formula in $$", () => {
@@ -51,17 +51,17 @@ describe("tables", () => {
 
 	it("converts HTML to Markdown", () => {
 		expect(formatTableBoxForCopy(table, "markdown")).toBe(
-			["| Model | BLEU |", "| --- | --- |", "| A & B | $d_{model}$ \\| 5% |"].join("\n"),
+			["| Model | BLEU |", "| --- | --- |", "| A & B | $d_{model} \\cdot 2$ \\| 5% |"].join("\n"),
 		);
 	});
 
 	it("converts HTML to TSV", () => {
-		expect(formatTableBoxForCopy(table, "tsv")).toBe("Model\tBLEU\nA & B\t$d_{model}$ | 5%");
+		expect(formatTableBoxForCopy(table, "tsv")).toBe("Model\tBLEU\nA & B\t$d_{model} \\cdot 2$ | 5%");
 	});
 
 	it("converts HTML to LaTeX", () => {
 		expect(formatTableBoxForCopy(table, "latex")).toBe(
-			"\\begin{tabular}{cc}\nModel & BLEU \\\\\nA \\& B & \\$d\\_\\{model\\}\\$ | 5\\%\n\\end{tabular}",
+			"\\begin{tabular}{cc}\nModel & BLEU \\\\\nA \\& B & $d_{model} \\cdot 2$ | 5\\%\n\\end{tabular}",
 		);
 	});
 

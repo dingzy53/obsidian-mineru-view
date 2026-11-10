@@ -137,11 +137,11 @@ function htmlTableToMarkdown(html: string): string {
 
 	const columnCount = Math.max(...rows.map((row) => row.length));
 	const normalizedRows = rows.map((row) => padCells(row, columnCount));
-	const header = normalizedRows[0].map(escapeMarkdownTableCell);
+	const header = normalizedRows[0].map(formatMarkdownCell);
 	const separator = Array.from({ length: columnCount }, () => "---");
 	const body = normalizedRows
 		.slice(1)
-		.map((row) => row.map(escapeMarkdownTableCell));
+		.map((row) => row.map(formatMarkdownCell));
 	return [header, separator, ...body].map(formatMarkdownRow).join("\n");
 }
 
@@ -160,7 +160,7 @@ function htmlTableToLatex(html: string): string {
 	const columnCount = Math.max(...rows.map((row) => row.length));
 	const columns = "c".repeat(columnCount);
 	const body = rows
-		.map((row) => padCells(row, columnCount).map(escapeLatexCell).join(" & "))
+		.map((row) => padCells(row, columnCount).map(formatLatexCell).join(" & "))
 		.join(" \\\\\n");
 	return `\\begin{tabular}{${columns}}\n${body}\n\\end{tabular}`;
 }
@@ -181,11 +181,30 @@ function parseHtmlTableRows(html: string): string[][] {
 	return rows;
 }
 
+/**
+ * Private-use markers around a cell's inline formulas, so each output format
+ * can escape the text around a formula without touching the formula itself.
+ */
+const MATH_OPEN = "\uE000";
+const MATH_CLOSE = "\uE001";
+const MATH_SEGMENT = /\uE000([^\uE000\uE001]*)\uE001/g;
+
+/** Renders a parsed cell: `escapeText` for the text, `$…$` around formulas. */
+function renderCell(cell: string, escapeText: (text: string) => string): string {
+	let rendered = "";
+	let last = 0;
+	for (const match of cell.matchAll(MATH_SEGMENT)) {
+		rendered += escapeText(cell.slice(last, match.index)) + `$${match[1]}$`;
+		last = match.index + match[0].length;
+	}
+	return rendered + escapeText(cell.slice(last));
+}
+
 function normalizeHtmlCellText(value: string): string {
 	return decodeHtmlEntities(
 		value
 			// Middle JSON 2.0 marks inline formulas in cells as <eq>…</eq>.
-			.replace(/<eq>([\s\S]*?)<\/eq>/gi, (_match, formula: string) => `$${formula.trim()}$`)
+			.replace(/<eq>([\s\S]*?)<\/eq>/gi, (_match, formula: string) => `${MATH_OPEN}${formula.trim()}${MATH_CLOSE}`)
 			.replace(/<br\s*\/?>/gi, "\n")
 			.replace(/<[^>]+>/g, "")
 			.replace(/\r?\n/g, " ")
@@ -231,12 +250,22 @@ function formatMarkdownRow(row: string[]): string {
 	return `| ${row.join(" | ")} |`;
 }
 
-function escapeMarkdownTableCell(value: string): string {
-	return value.replace(/\\/g, "\\\\").replace(/\|/g, "\\|");
+/**
+ * A pipe would end the cell, also inside a formula. Backslashes stay as they
+ * are: doubling them would break the LaTeX of inline formulas.
+ */
+function formatMarkdownCell(value: string): string {
+	return renderCell(value, (text) => text).replace(/\|/g, "\\|");
 }
 
 function formatTsvCell(value: string): string {
-	return value.replace(/\t/g, " ").replace(/\r?\n/g, " ");
+	return renderCell(value, (text) => text)
+		.replace(/\t/g, " ")
+		.replace(/\r?\n/g, " ");
+}
+
+function formatLatexCell(value: string): string {
+	return renderCell(value, escapeLatexCell);
 }
 
 function escapeLatexCell(value: string): string {
