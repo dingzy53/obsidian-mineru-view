@@ -53,16 +53,6 @@ export function openBoxMenu(context: BoxMenuContext, box: NormalizedBox, event: 
 		copy("Copy text", "copy", () => formatBoxForCopy(box), "Text");
 	}
 
-	const image = context.store.imageFile(context.result, box);
-	if (image) {
-		copy(
-			"Copy image embed",
-			"image",
-			() => buildFileEmbed(context.app.metadataCache.fileToLinktext(image, "", false)),
-			"Image embed",
-		);
-	}
-
 	menu.addSeparator();
 	const linktext = context.app.metadataCache.fileToLinktext(context.file, "", false);
 	const rect = async () => normalizedBoxToPdfRect(box.bbox, await context.geometry.getPageView(context.file, box.page));
@@ -72,11 +62,23 @@ export function openBoxMenu(context: BoxMenuContext, box: NormalizedBox, event: 
 		async () => buildRegionLink(linktext, box.page, await rect(), `${typeLabel} p.${box.page}`),
 		"Link",
 	);
+
+	// Obsidian's own PDF embed ignores `rect` and shows the whole page (checked
+	// in 1.15), so a box whose picture MinerU exported embeds that picture.
+	const image = context.store.imageFile(context.result, box);
+	if (image) {
+		copy(
+			"Copy image embed",
+			"image",
+			() => buildFileEmbed(context.app.metadataCache.fileToLinktext(image, "", false)),
+			"Image embed",
+		);
+	}
 	copy(
-		"Copy embed of region",
-		"crop",
+		"Copy page embed",
+		"file-text",
 		async () => buildRegionEmbed(linktext, box.page, await rect()),
-		"Embed",
+		"Page embed",
 	);
 
 	menu.showAtMouseEvent(event);
