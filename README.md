@@ -3,7 +3,9 @@
 [![Obsidian](https://img.shields.io/badge/Obsidian-1.13.1%2B-7c3aed?logo=obsidian)](https://obsidian.md)
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue)](LICENSE)
 
-See [MinerU](https://github.com/opendatalab/MinerU)'s layout analysis directly on your PDFs in [Obsidian](https://obsidian.md): every block MinerU found, colored by type and numbered in reading order, drawn over the built-in PDF viewer. Click a block to copy its text, formula or table, or a link back to that spot in the PDF.
+See [MinerU](https://github.com/opendatalab/MinerU)'s layout analysis directly on your PDFs in [Obsidian](https://obsidian.md): every block MinerU found, colored by type and numbered in reading order, drawn over the built-in PDF viewer. Right-click a block to copy its text, formula or table, or a link back to that spot in the PDF.
+
+![MinerU's layout drawn over a PDF in Obsidian, with the copy menu of a formula open](assets/screenshot.png)
 
 A companion to [mineru-for-zotero](https://github.com/dingzy53/mineru-for-zotero), from which the layout code is ported. See [License](#license).
 
@@ -15,7 +17,7 @@ This version only **views results you already have**. It does not call the Miner
 - Reading-order numbers on each box, and optional arrows joining the boxes of a page in order.
 - Three modes per PDF tab: **all** boxes, only the box **under the pointer**, or **off**.
 - A legend that shows what each color means and hides the block types you do not want to see.
-- Click a box to copy:
+- Right-click a box, or click its number, to copy:
   - text, headings, captions and references as text (inline formulas as `$…$`);
   - formulas as `$$…$$` or as plain LaTeX;
   - tables as Markdown, HTML, LaTeX or TSV;
@@ -83,11 +85,13 @@ Commands (no default hotkeys): **Cycle layout mode**, **Show all layout boxes**,
 
 ## Installation
 
-Not in the community directory yet. To install by hand, download `main.js`, `manifest.json` and `styles.css` from the [latest release](https://github.com/dingzy53/obsidian-mineru/releases/latest) into `<vault>/.obsidian/plugins/mineru-view/`, then enable **MinerU View** under **Settings → Community plugins**.
+**From Obsidian** (once it is listed in the community directory): open **Settings → Community plugins → Browse**, search for **MinerU View**, then select **Install** and **Enable**.
+
+**By hand:** download `main.js`, `manifest.json` and `styles.css` from the [latest release](https://github.com/dingzy53/obsidian-mineru/releases/latest) into `<vault>/.obsidian/plugins/mineru-view/`, then enable **MinerU View** under **Settings → Community plugins**.
 
 ## Privacy
 
-Everything happens inside your vault. The plugin makes no network requests and uses no Node or Electron API.
+Everything happens inside your vault. The plugin makes no network requests, collects no telemetry, reads nothing outside the vault and uses no Node or Electron API.
 
 ## Development
 
@@ -111,4 +115,4 @@ The box normalizer, type palette, copy formatter and box helpers are ported from
 - Copyright (C) Asianfleet: the original [MinerU for Zotero](https://github.com/Asianfleet/mineru-for-zotero).
 - Copyright (C) 2026 Ding Zheng Yuan: the fork's modifications and this plugin.
 
-The block colors follow MinerU's `layout.pdf`. This project is not affiliated with MinerU or OpenDataLab.
+The block colors follow MinerU's `layout.pdf`. This project is not affiliated with MinerU, OpenDataLab or Obsidian.

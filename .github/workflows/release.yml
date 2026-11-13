@@ -1,58 +1,69 @@
-name: Release Obsidian Plugin
+name: Release
 
+# Push a tag equal to the version in manifest.json, without a "v" (e.g. 0.1.0).
+# Obsidian finds a release by that tag and downloads its main.js,
+# manifest.json and styles.css.
 on:
   push:
     tags:
-      - "[0-9]+.[0-9]+.[0-9]+*"
-      - "v[0-9]+.[0-9]+.[0-9]+*"
-  workflow_dispatch:
+      - "[0-9]+.[0-9]+.[0-9]+"
 
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      # Needed to sign build provenance attestations for the release assets.
+      # Needed to sign the build provenance attestation of the release files.
       id-token: write
       attestations: write
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 22
           cache: "npm"
+
+      - name: Check the tag matches the version
+        run: |
+          tag="${GITHUB_REF_NAME}"
+          for file in manifest.json package.json; do
+            version=$(node -p "require('./$file').version")
+            if [ "$version" != "$tag" ]; then
+              echo "::error::Tag $tag does not match version $version in $file"
+              exit 1
+            fi
+          done
+          node -e "const v=require('./versions.json'); if (!v['$tag']) { console.error('::error::versions.json has no entry for $tag'); process.exit(1) }"
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests and lint
+      - name: Lint and test
         run: |
           npm run lint
-          npm test
           npm run lint:review
+          npm test
 
-      - name: Build plugin
+      - name: Build
         run: npm run build
 
       - name: Attest build provenance
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest@v4
         with:
           subject-path: |
             main.js
             manifest.json
             styles.css
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v3
         with:
           files: |
             main.js
             manifest.json
             styles.css
           generate_release_notes: true
-          draft: false
-          prerelease: false
