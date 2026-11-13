@@ -54,7 +54,7 @@ Open a PDF. If it has a result, its boxes appear and the PDF toolbar shows a lay
 |---|---|
 | Switch mode (all → pointer → off) | Click the toolbar button, or run **Cycle layout mode** |
 | Open the legend, hide block types | Right-click the toolbar button, or run **Show layout legend** |
-| Copy from a block | Click the block |
+| Copy from a block | Right-click the block, or click its number |
 | Toggle arrows | **Toggle reading-order arrows**, or the legend |
 
 A dimmed toolbar button means no result was found for that PDF; click it to see where the plugin looked.
@@ -63,7 +63,7 @@ Commands (no default hotkeys): **Cycle layout mode**, **Show all layout boxes**,
 
 ### Good to know
 
-- **Selecting text.** A box takes clicks, so you cannot start a text selection inside one. Switch the mode to **off** (one or two clicks on the toolbar button) to select text or use another plugin's tools on the page.
+- **The PDF stays usable.** Boxes don't take clicks: you can select text and follow links inside them. With text selected, right-click gives the viewer's own menu instead of the block's.
 - **Links to a region** look like `[[paper.pdf#page=6&rect=118,606,493,681|Table p.6]]`. Obsidian opens the PDF at that page. Highlighting the region itself needs a plugin that understands `rect`, such as PDF Companion or PDF++.
 - **Embeds.** Obsidian's PDF embed shows a whole page and ignores `rect`, so "Copy page embed" gives you the page. For a cropped figure, table or formula use "Copy image embed", which embeds the picture MinerU exported.
 - **Captions** are their own boxes, separate from their figure or table.

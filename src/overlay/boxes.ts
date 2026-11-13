@@ -50,6 +50,26 @@ export function containsBox(container: NormalizedBox, child: NormalizedBox): boo
 	);
 }
 
+/**
+ * The box under a point of the page, in normalized coordinates (0–1, origin
+ * top left). Where boxes overlap, the smallest wins, so a caption or formula
+ * inside a larger box stays reachable. Edges count as inside.
+ */
+export function findBoxAt(boxes: readonly NormalizedBox[], x: number, y: number): NormalizedBox | null {
+	let best: NormalizedBox | null = null;
+	let bestArea = Infinity;
+	for (const box of boxes) {
+		const { bbox } = box;
+		if (x < bbox.x || y < bbox.y || x > bbox.x + bbox.width || y > bbox.y + bbox.height) continue;
+		const area = bbox.width * bbox.height;
+		if (area < bestArea) {
+			best = box;
+			bestArea = area;
+		}
+	}
+	return best;
+}
+
 /** The boxes of a page in reading order (badge number, then document order). */
 export function sortByReadingOrder(boxes: NormalizedBox[]): NormalizedBox[] {
 	return [...boxes].sort((a, b) => a.pageIndexLabel - b.pageIndexLabel || a.rawIndex - b.rawIndex);

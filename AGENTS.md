@@ -110,8 +110,12 @@ test/                     vitest; fixtures are MinerU 3.4.4 output for two
                           (layout, formulas and tables kept)
 ```
 
-Hover mode and the type label are CSS only (`.mineru-mode-hover`, `:hover`),
-so there is no hover module.
+Boxes have `pointer-events: none`, so text selection and links in the PDF
+work through them; only the badges take the pointer. The controller finds the
+box under the pointer by position (`findBoxAt`) and sets
+`.mineru-is-hovered`; hover mode and the type label are CSS on that class. A
+box's menu opens on right-click when no text is selected, or on a click on its
+badge.
 
 ## Documented exceptions
 

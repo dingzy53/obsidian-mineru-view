@@ -33,6 +33,11 @@ export function findLivePages(container: HTMLElement): HTMLElement[] {
 	return Array.from(container.querySelectorAll<HTMLElement>(LIVE_PAGE_SELECTOR));
 }
 
+/** The page element an event target lies in, if any. */
+export function findPageOf(target: Element): HTMLElement | null {
+	return target.closest<HTMLElement>(PAGE_SELECTOR);
+}
+
 /** 1-based page number of a page element. */
 export function getPageNumber(pageEl: HTMLElement): number | null {
 	const value = Number.parseInt(pageEl.getAttribute("data-page-number") ?? "", 10);

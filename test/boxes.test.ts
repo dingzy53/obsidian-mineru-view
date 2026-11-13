@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { normalizeMinerUBoxes } from "../src/mineru/boxNormalizer";
 import {
+	findBoxAt,
 	formatBoxTypeLabel,
 	getRenderablePageBoxes,
 	groupBoxesByPage,
@@ -29,6 +30,17 @@ describe("box helpers", () => {
 		const reference = { ...boxes[0], type: "ref_text", bbox: { x: 0.1, y: 0.1, width: 0.5, height: 0.1 } };
 		expect(getRenderablePageBoxes([list, reference])).toEqual([reference]);
 		expect(getRenderablePageBoxes([list, boxes[0]])).toHaveLength(2);
+	});
+
+	it("finds the smallest box under a point", () => {
+		const outer = { ...boxes[0], rawIndex: 1, bbox: { x: 0.1, y: 0.1, width: 0.6, height: 0.6 } };
+		const inner = { ...boxes[0], rawIndex: 2, bbox: { x: 0.2, y: 0.2, width: 0.1, height: 0.1 } };
+		expect(findBoxAt([outer, inner], 0.25, 0.25)).toBe(inner);
+		expect(findBoxAt([inner, outer], 0.25, 0.25)).toBe(inner);
+		expect(findBoxAt([outer, inner], 0.5, 0.5)).toBe(outer);
+		expect(findBoxAt([outer, inner], 0.7, 0.7)).toBe(outer);
+		expect(findBoxAt([outer, inner], 0.05, 0.5)).toBeNull();
+		expect(findBoxAt([], 0.5, 0.5)).toBeNull();
 	});
 
 	it("labels types", () => {

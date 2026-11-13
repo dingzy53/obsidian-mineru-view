@@ -2,11 +2,21 @@ import type { App, FileView, TFile } from "obsidian";
 import { openBoxMenu } from "../copy/boxMenu";
 import type { NormalizedBox, OverlayMode } from "../mineru/domain";
 import type { PageGeometry } from "../pdf/pageGeometry";
-import { findLivePages, getPageAspect, getPageNumber } from "../pdf/viewerAdapter";
+import { findLivePages, findPageOf, getPageAspect, getPageNumber } from "../pdf/viewerAdapter";
 import type { MinerUResult, ResultStore } from "../results/store";
 import { nextMode, type MinerUSettings } from "../settingsModel";
-import { LAYER_CLASS, buildPageLayer, getBoxIndexFromEvent, type LayerOptions } from "./render";
+import { findBoxAt } from "./boxes";
+import { LAYER_CLASS, buildPageLayer, findBoxElement, getBoxIndexFromEvent, type LayerOptions } from "./render";
 import { removeToolbarButton, syncToolbarButton } from "./toolbar";
+
+/** Where the pointer is: enough of a mouse event to find the box under it. */
+interface PointerAt {
+	target: EventTarget | null;
+	clientX: number;
+	clientY: number;
+}
+
+const HOVERED_CLASS = "mineru-is-hovered";
 
 /** What a controller needs from the plugin. */
 export interface OverlayHost {
@@ -26,6 +36,11 @@ export interface OverlayHost {
  * `MutationObserver` on the view, batched per animation frame, puts missing
  * layers back. {@link sync} is idempotent: it only adds what is missing, so
  * the mutations it causes itself end after one more pass.
+ *
+ * Boxes do not take the pointer, so the PDF keeps text selection and links.
+ * The box under the pointer is found by position: it is highlighted while
+ * hovered, and its menu opens on right-click (unless text is selected, so the
+ * viewer's own menu stays available) or on a click on its badge.
  */
 export class OverlayController {
 	/** Per-view mode; starts from the default in settings. */
@@ -38,6 +53,12 @@ export class OverlayController {
 	private stopMigrationWatch: (() => void) | null = null;
 	private loadToken = 0;
 	private destroyed = false;
+	/** The visible boxes of each page layer, for hit-testing. */
+	private readonly layerBoxes = new WeakMap<HTMLElement, NormalizedBox[]>();
+	private readonly pointerListeners = new AbortController();
+	private pointer: PointerAt | null = null;
+	private pointerFrame: { win: Window; id: number } | null = null;
+	private hovered: HTMLElement | null = null;
 
 	constructor(
 		private readonly host: OverlayHost,
@@ -62,6 +83,7 @@ export class OverlayController {
 
 	start(): void {
 		this.observe();
+		this.listen();
 		// Moving the tab to another window re-parents the view; the observer
 		// and animation frames belong to the old window.
 		this.stopMigrationWatch = this.container.onWindowMigrated(() => {
@@ -112,6 +134,9 @@ export class OverlayController {
 		this.stopMigrationWatch = null;
 		if (this.frame) this.frame.win.cancelAnimationFrame(this.frame.id);
 		this.frame = null;
+		this.pointerListeners.abort();
+		if (this.pointerFrame) this.pointerFrame.win.cancelAnimationFrame(this.pointerFrame.id);
+		this.pointerFrame = null;
 		this.removeLayers();
 		removeToolbarButton(this.container);
 	}
@@ -127,6 +152,18 @@ export class OverlayController {
 			attributes: true,
 			attributeFilter: ["data-loaded"],
 		});
+	}
+
+	/**
+	 * Pointer listeners on the view's container, which stays the same element
+	 * when the view moves to another window. Removed in {@link destroy}.
+	 */
+	private listen(): void {
+		const signal = this.pointerListeners.signal;
+		this.container.addEventListener("pointermove", (event) => this.onPointerMove(event), { signal });
+		this.container.addEventListener("pointerleave", () => this.setHovered(null), { signal });
+		// Capture, so the menu of a box replaces the viewer's own on that click.
+		this.container.addEventListener("contextmenu", (event) => this.onContextMenu(event), { signal, capture: true });
 	}
 
 	private scheduleSync(): void {
@@ -169,14 +206,74 @@ export class OverlayController {
 			const boxes = pageNumber === null ? undefined : result.pages.get(pageNumber);
 			if (!boxes || boxes.length === 0) continue;
 			const layer = buildPageLayer(pageEl, boxes, { ...options, aspect: getPageAspect(pageEl) });
-			// Listeners live and die with the layer element.
-			layer.addEventListener("click", (event) => this.onBoxEvent(event, boxes));
-			layer.addEventListener("contextmenu", (event) => this.onBoxEvent(event, boxes));
+			this.layerBoxes.set(
+				layer,
+				boxes.filter((box) => !options.hiddenTypes.has(box.type)),
+			);
+			// A click on a badge; the listener lives and dies with the layer element.
+			layer.addEventListener("click", (event) => this.onBadgeClick(event));
 		}
 	}
 
 	private removeLayers(): void {
+		this.setHovered(null);
 		this.container.querySelectorAll(`.${LAYER_CLASS}`).forEach((layer) => layer.remove());
+	}
+
+	/** The box at a point of the view, with the layer it is drawn on. */
+	private boxAt(at: PointerAt): { box: NormalizedBox; layer: HTMLElement } | null {
+		if (!this.result || this.mode === "off") return null;
+		const target = at.target;
+		if (!target || !(target as Node).instanceOf(Element)) return null;
+		const pageEl = findPageOf(target as Element);
+		const layer = pageEl?.querySelector<HTMLElement>(`:scope > .${LAYER_CLASS}`);
+		const boxes = layer ? this.layerBoxes.get(layer) : undefined;
+		if (!layer || !boxes) return null;
+
+		// On a badge, which sits outside its box: that box.
+		const badgeIndex = getBoxIndexFromEvent(at);
+		if (badgeIndex !== null) {
+			const box = boxes.find((candidate) => candidate.rawIndex === badgeIndex);
+			return box ? { box, layer } : null;
+		}
+		const rect = layer.getBoundingClientRect();
+		if (rect.width <= 0 || rect.height <= 0) return null;
+		const box = findBoxAt(boxes, (at.clientX - rect.left) / rect.width, (at.clientY - rect.top) / rect.height);
+		return box ? { box, layer } : null;
+	}
+
+	/** Hover highlight, at most once per frame. */
+	private onPointerMove(event: PointerEvent): void {
+		this.pointer = { target: event.target, clientX: event.clientX, clientY: event.clientY };
+		if (this.pointerFrame) return;
+		const win = this.container.win;
+		const id = win.requestAnimationFrame(() => {
+			this.pointerFrame = null;
+			const at = this.pointer;
+			const hit = at ? this.boxAt(at) : null;
+			this.setHovered(hit ? findBoxElement(hit.layer, hit.box.rawIndex) : null);
+		});
+		this.pointerFrame = { win, id };
+	}
+
+	private setHovered(boxEl: HTMLElement | null): void {
+		if (boxEl === this.hovered) return;
+		this.hovered?.removeClass(HOVERED_CLASS);
+		boxEl?.addClass(HOVERED_CLASS);
+		this.hovered = boxEl;
+	}
+
+	private onContextMenu(event: MouseEvent): void {
+		// Selected text: leave the right-click to the viewer.
+		const selection = this.container.win.getSelection();
+		if (selection && !selection.isCollapsed && selection.toString().trim() !== "") return;
+		const hit = this.boxAt(event);
+		if (hit) this.openMenu(event, hit.box);
+	}
+
+	private onBadgeClick(event: MouseEvent): void {
+		const hit = this.boxAt(event);
+		if (hit) this.openMenu(event, hit.box);
 	}
 
 	private onToolbarClick(): void {
@@ -187,12 +284,10 @@ export class OverlayController {
 		this.cycleMode();
 	}
 
-	private onBoxEvent(event: MouseEvent, boxes: NormalizedBox[]): void {
-		const index = getBoxIndexFromEvent(event);
-		const box = index === null ? undefined : boxes.find((candidate) => candidate.rawIndex === index);
+	private openMenu(event: MouseEvent, box: NormalizedBox): void {
 		const file = this.file;
 		const result = this.result;
-		if (!box || !file || !result) return;
+		if (!file || !result) return;
 		event.preventDefault();
 		event.stopPropagation();
 		openBoxMenu({ ...this.host, file, result, win: this.container.win }, box, event);

@@ -9,7 +9,11 @@
 .mineru-page-layer {
 	position: absolute;
 	inset: 0;
-	/* Above the text and annotation layers. Only boxes take the pointer. */
+	/*
+	 * Above the text and annotation layers, but only the badges take the
+	 * pointer: text selection and links work through the boxes. The box under
+	 * the pointer is found by position and gets .mineru-is-hovered.
+	 */
 	z-index: 3;
 	pointer-events: none;
 	--mineru-fill-alpha: 0.15;
@@ -27,23 +31,21 @@
 	border: 1px solid rgb(var(--mineru-box-rgb));
 	border-radius: 2px;
 	background-color: rgba(var(--mineru-box-rgb), var(--mineru-fill-alpha));
-	pointer-events: auto;
-	cursor: pointer;
 }
 
-.mineru-box:hover {
+.mineru-box.mineru-is-hovered {
 	border-width: 2px;
 	background-color: rgba(var(--mineru-box-rgb), calc(var(--mineru-fill-alpha) + 0.15));
 	z-index: 1;
 }
 
 /* Hover mode: boxes are there, and show only under the pointer. */
-.mineru-mode-hover .mineru-box:not(:hover) {
+.mineru-mode-hover .mineru-box:not(.mineru-is-hovered) {
 	border-color: transparent;
 	background-color: transparent;
 }
 
-.mineru-mode-hover .mineru-box:not(:hover) .mineru-box-index,
+.mineru-mode-hover .mineru-box:not(.mineru-is-hovered) .mineru-box-index,
 .mineru-mode-hover .mineru-arrows {
 	display: none;
 }
@@ -64,8 +66,10 @@
 	pointer-events: none;
 }
 
-/* Outside the box, on its right edge, so it never covers the content. */
+/* Outside the box, on its right edge, so it never covers the content. A click opens the box's menu. */
 .mineru-box-index {
+	pointer-events: auto;
+	cursor: var(--cursor);
 	top: -1px;
 	left: 100%;
 	min-width: 14px;
@@ -85,7 +89,7 @@
 	border-radius: 3px 3px 0 0;
 }
 
-.mineru-box:hover .mineru-box-label {
+.mineru-box.mineru-is-hovered .mineru-box-label {
 	display: block;
 }
 

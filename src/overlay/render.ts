@@ -23,8 +23,9 @@ function percent(value: number): string {
 /**
  * Builds the overlay of one page and appends it to the page element. Boxes are
  * positioned in percentages of the page, so the layer follows zoom without
- * being rebuilt. Only the boxes take pointer events; everywhere else the
- * viewer keeps wheel, selection and clicks.
+ * being rebuilt. Only the reading-order badges take the pointer: the PDF
+ * keeps text selection, links and clicks everywhere else, and the controller
+ * finds the box under the pointer by its position.
  */
 export function buildPageLayer(pageEl: HTMLElement, boxes: NormalizedBox[], options: LayerOptions): HTMLElement {
 	const layer = pageEl.createDiv({ cls: [LAYER_CLASS, `mineru-mode-${options.mode}`] });
@@ -53,8 +54,13 @@ export function buildPageLayer(pageEl: HTMLElement, boxes: NormalizedBox[], opti
 	return layer;
 }
 
-/** The box a pointer event landed on, by its position in the result. */
-export function getBoxIndexFromEvent(event: Event): number | null {
+/** The element drawn for a box, if it is on this layer. */
+export function findBoxElement(layer: HTMLElement, rawIndex: number): HTMLElement | null {
+	return layer.querySelector<HTMLElement>(`[${BOX_INDEX_ATTR}="${rawIndex}"]`);
+}
+
+/** The box a pointer event landed on (its badge), by its position in the result. */
+export function getBoxIndexFromEvent(event: { target: EventTarget | null }): number | null {
 	const target = event.target;
 	if (!target || !(target as Node).instanceOf(Element)) return null;
 	const boxEl = (target as Element).closest(`[${BOX_INDEX_ATTR}]`);
