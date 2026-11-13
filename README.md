@@ -1,4 +1,4 @@
-# MinerU for Obsidian
+# MinerU View
 
 [![Obsidian](https://img.shields.io/badge/Obsidian-1.13.1%2B-7c3aed?logo=obsidian)](https://obsidian.md)
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue)](LICENSE)
@@ -83,7 +83,7 @@ Commands (no default hotkeys): **Cycle layout mode**, **Show all layout boxes**,
 
 ## Installation
 
-Not in the community directory yet. To install by hand, download `main.js`, `manifest.json` and `styles.css` from the [latest release](https://github.com/dingzy53/obsidian-mineru/releases/latest) into `<vault>/.obsidian/plugins/mineru-for-obsidian/`, then enable **MinerU for Obsidian** under **Settings → Community plugins**.
+Not in the community directory yet. To install by hand, download `main.js`, `manifest.json` and `styles.css` from the [latest release](https://github.com/dingzy53/obsidian-mineru/releases/latest) into `<vault>/.obsidian/plugins/mineru-view/`, then enable **MinerU View** under **Settings → Community plugins**.
 
 ## Privacy
 

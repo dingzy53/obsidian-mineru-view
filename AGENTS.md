@@ -22,7 +22,7 @@ why the license is AGPL-3.0. `PLAN.md` is the approved v1 plan.
 - `npm run build` — typecheck + production bundle
 - `npm run lint` — keep the eslint config passing
 - `npm run lint:review` — what Obsidian's community plugin scanner checks
-  (`eslint.review.config.mjs`); see "Documented exceptions"
+  (`eslint.review.config.mjs`); must report nothing
 - `npm test` — vitest unit tests
 - `npm run version` — sync the version across package.json, manifest.json and
   versions.json
@@ -114,11 +114,9 @@ so there is no hover module.
 
 ## Documented exceptions
 
-- **`npm run lint:review` reports one finding**: `validate-manifest`, "Plugin
-  name must not include the word Obsidian". The name "MinerU for Obsidian" and
-  id `mineru-for-obsidian` were chosen in the plan; the community directory
-  will reject both, so they must change before submission (the id cannot
-  change after publication). Everything else must report nothing.
+- **`npm run lint:review` must report nothing.** The plugin is "MinerU View",
+  id `mineru-view`; the community directory rejects "Obsidian" in a name or
+  id, and the id cannot change after publication.
 - **Viewer internals: none.** If one becomes unavoidable, put it in
   `viewerAdapter.ts` with a per-line `eslint-disable` and a justification, and
   list it here.
@@ -134,7 +132,7 @@ so there is no hover module.
 ## Definition of done for any change
 
 - `npm run build`, `npm run lint` and `npm test` pass; `npm run lint:review`
-  shows only the documented exception.
+  reports nothing.
 - Checked in a real vault on a PDF with a result:
   - boxes line up, and come back after zooming, after scrolling far away and
     back, and in a popout window;
