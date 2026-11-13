@@ -13,7 +13,7 @@ is the seam, interface only).
 
 The pure layout code is ported from
 [mineru-for-zotero](https://github.com/dingzy53/mineru-for-zotero), which is
-why the license is AGPL-3.0. `PLAN.md` is the approved v1 plan.
+why the license is AGPL-3.0.
 
 ## Commands
 
@@ -106,7 +106,8 @@ src/copy/
   links.ts                link and embed strings (pure)
 styles.css                layer, box, badge, arrow, legend, type palette
 test/                     vitest; fixtures are MinerU 3.4.4 output for two
-                          public arXiv papers
+                          arXiv papers with the prose replaced by filler
+                          (layout, formulas and tables kept)
 ```
 
 Hover mode and the type label are CSS only (`.mineru-mode-hover`, `:hover`),
@@ -143,6 +144,6 @@ so there is no hover module.
 
 ## When in doubt
 
-Consult `README.md`, `PLAN.md` and this file first. If a constraint needs to
+Consult `README.md` and this file first. If a constraint needs to
 change based on real data, update `README.md` and `AGENTS.md` in the same
 change.

@@ -6,3 +6,5 @@ data.json
 .obsidian/
 # Local MinerU sample output used for manual testing; not redistributed.
 example/
+# Local planning notes; not part of the published repo.
+PLAN.md
