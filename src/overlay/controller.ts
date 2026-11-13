@@ -264,9 +264,15 @@ export class OverlayController {
 	}
 
 	private onContextMenu(event: MouseEvent): void {
-		// Selected text: leave the right-click to the viewer.
+		// Text selected in this view: leave the right-click to the viewer.
 		const selection = this.container.win.getSelection();
-		if (selection && !selection.isCollapsed && selection.toString().trim() !== "") return;
+		if (
+			selection &&
+			!selection.isCollapsed &&
+			selection.toString().trim() !== "" &&
+			this.container.contains(selection.anchorNode)
+		)
+			return;
 		const hit = this.boxAt(event);
 		if (hit) this.openMenu(event, hit.box);
 	}

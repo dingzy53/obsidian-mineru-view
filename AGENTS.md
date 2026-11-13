@@ -51,7 +51,10 @@ why the license is AGPL-3.0.
    is handled through `onWindowMigrated`.
 5. **Clean up completely.** Disabling the plugin removes every layer and
    toolbar button (`OverlayController.destroy`); listeners on layer elements
-   die with the element, everything else goes through `register*`.
+   die with the element. The controller's pointer listeners on the view
+   container are removed by an `AbortController`, and its observer and
+   animation frames are cancelled, in `destroy`; everything else goes through
+   `register*`.
 6. **Never read `structured_content.json` as a layout.** It has
    `pages[].blocks[].bbox` but no `schema`; the legacy path would divide its
    bboxes by a page size it does not have (`src/mineru/selectRawJson.ts`).

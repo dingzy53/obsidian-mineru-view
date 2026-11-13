@@ -104,6 +104,13 @@ npm run lint
 npm run lint:review  # what Obsidian's community scanner checks
 ```
 
+To release, bump the version (this also updates `manifest.json` and `versions.json`, and tags without a `v`, as Obsidian requires), then push the tag; the release workflow builds and publishes it:
+
+```
+npm version patch    # or minor / major
+git push --follow-tags
+```
+
 See [AGENTS.md](AGENTS.md) for the architecture and constraints.
 
 ## License
