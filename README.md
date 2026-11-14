@@ -1,11 +1,13 @@
 # MinerU View
 
+[![Release](https://img.shields.io/github/v/release/dingzy53/obsidian-mineru-view)](https://github.com/dingzy53/obsidian-mineru-view/releases/latest)
+[![Downloads](https://img.shields.io/badge/dynamic/json?label=downloads&logo=obsidian&color=7c3aed&query=%24%5B%22mineru-view%22%5D.downloads&url=https%3A%2F%2Fraw.githubusercontent.com%2Fobsidianmd%2Fobsidian-releases%2Fmaster%2Fcommunity-plugin-stats.json)](https://community.obsidian.md/plugins/mineru-view)
 [![Obsidian](https://img.shields.io/badge/Obsidian-1.13.1%2B-7c3aed?logo=obsidian)](https://obsidian.md)
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue)](LICENSE)
 
 See [MinerU](https://github.com/opendatalab/MinerU)'s layout analysis directly on your PDFs in [Obsidian](https://obsidian.md): every block MinerU found, colored by type and numbered in reading order, drawn over the built-in PDF viewer. Right-click a block to copy its text, formula or table, or a link back to that spot in the PDF.
 
-![MinerU's layout drawn over a PDF in Obsidian, with the copy menu of a formula open](assets/screenshot.png)
+<img src="docs/images/hero.png" alt="MinerU's layout drawn over a PDF in Obsidian, with the copy menu of a formula open" width="778">
 
 A companion to [mineru-for-zotero](https://github.com/dingzy53/mineru-for-zotero), from which the layout code is ported. See [License](#license).
 
@@ -29,6 +31,12 @@ This version only **views results you already have**. It does not call the Miner
 
 - **Obsidian Desktop** 1.13.1 or later. The plugin is desktop only.
 - MinerU output for your PDFs, with the middle JSON (`middle_json.json`). Results from MinerU 3.x (`docvortex.middle` 2.0) and the older `pdf_info` layout are both read.
+
+## Installation
+
+**From Obsidian** (once it is listed in the [community directory](https://community.obsidian.md/plugins/mineru-view)): open **Settings → Community plugins → Browse**, search for **MinerU View**, then select **Install** and **Enable**.
+
+**By hand:** download `main.js`, `manifest.json` and `styles.css` from the [latest release](https://github.com/dingzy53/obsidian-mineru-view/releases/latest) into `<vault>/.obsidian/plugins/mineru-view/`, then enable **MinerU View** under **Settings → Community plugins**.
 
 ## Where to put MinerU's results
 
@@ -66,11 +74,7 @@ Commands (no default hotkeys): **Cycle layout mode**, **Show all layout boxes**,
 ### Good to know
 
 - **The PDF stays usable.** Boxes don't take clicks: you can select text and follow links inside them. With text selected, right-click gives the viewer's own menu instead of the block's.
-- **Links to a region** look like `[[paper.pdf#page=6&rect=118,606,493,681|Table p.6]]`. Obsidian opens the PDF at that page. Highlighting the region itself needs a plugin that understands `rect`, such as PDF Companion or PDF++.
-- **Embeds.** Obsidian's PDF embed shows a whole page and ignores `rect`, so "Copy page embed" gives you the page. For a cropped figure, table or formula use "Copy image embed", which embeds the picture MinerU exported.
 - **Captions** are their own boxes, separate from their figure or table.
-- **Rotated pages** are not supported: boxes are placed for the page as MinerU saw it.
-- **Embedded PDFs** (`![[paper.pdf]]` inside a note) do not get an overlay, only PDF tabs do.
 
 ## Settings
 
@@ -83,15 +87,19 @@ Commands (no default hotkeys): **Cycle layout mode**, **Show all layout boxes**,
 | Box fill opacity | 0.15 | 0 draws outlines only. |
 | Hidden block types | none | Set in the legend; "Show all" resets it. |
 
-## Installation
+## Privacy and security
 
-**From Obsidian** (once it is listed in the community directory): open **Settings → Community plugins → Browse**, search for **MinerU View**, then select **Install** and **Enable**.
+- **Network:** none. The plugin makes no requests and collects no telemetry.
+- **Files:** it only reads MinerU results and PDFs inside your vault, through Obsidian's API. It writes nothing but its own settings.
+- **Clipboard:** it writes to the clipboard when you pick a copy action, and never reads it.
+- **No Node or Electron API**, no `child_process`, no `fs`.
 
-**By hand:** download `main.js`, `manifest.json` and `styles.css` from the [latest release](https://github.com/dingzy53/obsidian-mineru-view/releases/latest) into `<vault>/.obsidian/plugins/mineru-view/`, then enable **MinerU View** under **Settings → Community plugins**.
+## Limitations
 
-## Privacy
-
-Everything happens inside your vault. The plugin makes no network requests, collects no telemetry, reads nothing outside the vault and uses no Node or Electron API.
+- **Links to a region** look like `[[paper.pdf#page=6&rect=118,606,493,681|Table p.6]]`. Obsidian opens the PDF at that page. Highlighting the region itself needs a plugin that understands `rect`, such as PDF Companion or PDF++.
+- **Embeds.** Obsidian's PDF embed shows a whole page and ignores `rect`, so "Copy page embed" gives you the page. For a cropped figure, table or formula use "Copy image embed", which embeds the picture MinerU exported.
+- **Rotated pages** are not supported: boxes are placed for the page as MinerU saw it.
+- **Embedded PDFs** (`![[paper.pdf]]` inside a note) do not get an overlay, only PDF tabs do.
 
 ## Development
 
@@ -104,11 +112,13 @@ npm run lint
 npm run lint:review  # what Obsidian's community scanner checks
 ```
 
-To release, bump the version (this also updates `manifest.json` and `versions.json`, and tags without a `v`, as Obsidian requires), then push the tag; the release workflow builds and publishes it:
+### Releasing
+
+`npm version` also updates `manifest.json` and `versions.json`, and tags without a `v`, as Obsidian requires. The release workflow builds and publishes the tag.
 
 ```
 npm version patch    # or minor / major
-git push --follow-tags
+git push --follow-tags origin main
 ```
 
 See [AGENTS.md](AGENTS.md) for the architecture and constraints.
