@@ -51,7 +51,9 @@ jobs:
       - name: Build
         run: npm run build
 
+      # Attestations are not available to private repositories on a personal plan.
       - name: Attest build provenance
+        if: ${{ !github.event.repository.private }}
         uses: actions/attest@v4
         with:
           subject-path: |

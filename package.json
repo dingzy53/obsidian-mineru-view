@@ -20,7 +20,7 @@
 	"author": "Ding Zheng Yuan",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/dingzy53/obsidian-mineru.git"
+		"url": "git+https://github.com/dingzy53/obsidian-mineru-view.git"
 	},
 	"license": "AGPL-3.0-or-later",
 	"devDependencies": {

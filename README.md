@@ -87,7 +87,7 @@ Commands (no default hotkeys): **Cycle layout mode**, **Show all layout boxes**,
 
 **From Obsidian** (once it is listed in the community directory): open **Settings → Community plugins → Browse**, search for **MinerU View**, then select **Install** and **Enable**.
 
-**By hand:** download `main.js`, `manifest.json` and `styles.css` from the [latest release](https://github.com/dingzy53/obsidian-mineru/releases/latest) into `<vault>/.obsidian/plugins/mineru-view/`, then enable **MinerU View** under **Settings → Community plugins**.
+**By hand:** download `main.js`, `manifest.json` and `styles.css` from the [latest release](https://github.com/dingzy53/obsidian-mineru-view/releases/latest) into `<vault>/.obsidian/plugins/mineru-view/`, then enable **MinerU View** under **Settings → Community plugins**.
 
 ## Privacy
 
