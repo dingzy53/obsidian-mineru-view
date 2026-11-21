@@ -3,7 +3,7 @@ import { normalizeMinerUBoxes } from "../mineru/boxNormalizer";
 import type { NormalizedBox } from "../mineru/domain";
 import { isMiddleJson, orderJsonCandidates } from "../mineru/selectRawJson";
 import { getRenderablePageBoxes, groupBoxesByPage, listBoxTypes } from "../overlay/boxes";
-import { resultFolderFor, resultFolderOfPath, resultImagePath } from "./paths";
+import { candidateBoxImagePaths, resultFolderFor, resultFolderOfPath, resultImagePath } from "./paths";
 
 /** A PDF's MinerU layout, ready to draw. */
 export interface MinerUResult {
@@ -71,11 +71,17 @@ export class ResultStore {
 		this.cache.clear();
 	}
 
-	/** The vault file of a box's image, or null when it was not exported. */
+	/**
+	 * The vault file of a box's image, or null when it was not exported. Tries
+	 * each of `candidateBoxImagePaths`, so a JSON without `image_path` still
+	 * finds MinerU's `images/page_N_<type>_K.jpg`.
+	 */
 	imageFile(result: MinerUResult, box: NormalizedBox): TFile | null {
-		if (!box.imagePath) return null;
-		const file = this.app.vault.getAbstractFileByPath(normalizePath(resultImagePath(result.folder, box.imagePath)));
-		return file instanceof TFile ? file : null;
+		for (const candidate of candidateBoxImagePaths(box)) {
+			const file = this.app.vault.getAbstractFileByPath(normalizePath(resultImagePath(result.folder, candidate)));
+			if (file instanceof TFile) return file;
+		}
+		return null;
 	}
 
 	private async load(folderPath: string): Promise<MinerUResult | null> {
