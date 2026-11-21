@@ -81,7 +81,7 @@ describe("normalizeMinerUBoxes on the docvortex 2.0 fixtures", () => {
 			expect(box.imagePath, `${box.type} on page ${box.page}`).toMatch(/^images\/page_\d+_[a-z]+_\d+\.jpg$/);
 		}
 		expect(attention.find((box) => box.type === "image")?.imagePath).toBe("images/page_2_image_0.jpg");
-		// The bert result was exported without images.
+		// The bert JSON omits image_path (see candidateBoxImagePaths).
 		expect(bert.filter(isContainer).length).toBe(17);
 		expect(bert.some((box) => box.imagePath)).toBe(false);
 	});
@@ -143,6 +143,39 @@ describe("normalizeMinerUBoxes on legacy pdf_info results", () => {
 		// One box lacks an index, so the page is numbered by position.
 		expect(boxes.map((box) => box.pageIndexLabel)).toEqual([1, 2]);
 		expect(boxes[1].formula).toBe("E=mc^2");
+	});
+
+	it("takes an image path from an inline Markdown or HTML image link", () => {
+		const page = (blocks: unknown[]) => ({ pdf_info: [{ page_idx: 0, page_size: [100, 100], para_blocks: blocks }] });
+		const [markdown, html, dataUri, remote, dotted] = normalizeMinerUBoxes(
+			page([
+				{ type: "image", index: 0, bbox: [0, 0, 10, 10], markdown: "![](images/page_0_image_0.jpg)" },
+				{ type: "table", index: 1, bbox: [0, 0, 10, 10], markdown: '<img src="images/a b.png" alt="">' },
+				{ type: "image", index: 2, bbox: [0, 0, 10, 10], markdown: "![](data:image/png;base64,AAAA)" },
+				{ type: "image", index: 3, bbox: [0, 0, 10, 10], markdown: "![](https://example.com/x.png)" },
+				{ type: "image", index: 4, bbox: [0, 0, 10, 10], markdown: "![fig](./images/fig%201.jpg)" },
+			]),
+		);
+		expect(markdown.imagePath).toBe("images/page_0_image_0.jpg");
+		expect(html.imagePath).toBe("images/a b.png");
+		expect(dataUri.imagePath).toBeUndefined();
+		expect(remote.imagePath).toBeUndefined();
+		expect(dotted.imagePath).toBe("images/fig 1.jpg");
+	});
+
+	it("prefers image_path over an inline image link", () => {
+		const [box] = normalizeMinerUBoxes({
+			pdf_info: [
+				{
+					page_idx: 0,
+					page_size: [100, 100],
+					para_blocks: [
+						{ type: "image", bbox: [0, 0, 10, 10], image_path: "images/own.jpg", markdown: "![](images/other.jpg)" },
+					],
+				},
+			],
+		});
+		expect(box.imagePath).toBe("images/own.jpg");
 	});
 
 	it("returns nothing for junk", () => {

@@ -582,7 +582,47 @@ function getBlockImagePath(block: RawBlock): string | null {
 			return childPath;
 		}
 	}
+
+	for (const text of [block.markdown, block.text, block.content]) {
+		const linked = getInlineImagePath(text);
+		if (linked) {
+			return linked;
+		}
+	}
 	return null;
+}
+
+/**
+ * The first image a Markdown `![](path)` or HTML `<img src="path">` link
+ * points to, as legacy results carry it in their text. `data:` URIs and
+ * remote URLs are not files of the result folder.
+ */
+function getInlineImagePath(text: unknown): string | null {
+	if (typeof text !== "string" || !text) {
+		return null;
+	}
+	const patterns = [/!\[[^\]]*]\(\s*<?([^)\s>]+)>?/g, /<img\b[^>]*\bsrc\s*=\s*["']([^"']+)["']/gi];
+	for (const pattern of patterns) {
+		for (const match of text.matchAll(pattern)) {
+			const target = match[1] ?? "";
+			if (/^[a-z][a-z0-9+.-]*:/i.test(target)) {
+				continue;
+			}
+			const path = normalizeImagePath(safeDecodeUri(target).replace(/^(?:\.\/)+/, ""));
+			if (path) {
+				return path;
+			}
+		}
+	}
+	return null;
+}
+
+function safeDecodeUri(value: string): string {
+	try {
+		return decodeURI(value);
+	} catch {
+		return value;
+	}
 }
 
 function normalizeImagePath(path: unknown): string | null {
