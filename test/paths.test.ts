@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { normalizeMinerUBoxes } from "../src/mineru/boxNormalizer";
 import {
 	candidateBoxImagePaths,
+	checkResultsFolder,
 	cleanFolderPath,
 	resultFolderFor,
 	resultFolderOfPath,
@@ -29,6 +30,18 @@ describe("result folder paths", () => {
 		expect(validateResultsFolder("")).toBe("");
 		expect(validateResultsFolder("../outside")).toBeNull();
 		expect(validateResultsFolder(42)).toBeNull();
+		expect(checkResultsFolder(".obsidian/x", ".obsidian")).toEqual({
+			ok: false,
+			error: "Cannot store results inside the Obsidian configuration folder.",
+		});
+		expect(checkResultsFolder(".hidden/dir")).toEqual({
+			ok: false,
+			error: "Hidden folders starting with '.' are not supported.",
+		});
+		expect(checkResultsFolder("a/../b")).toEqual({
+			ok: false,
+			error: "Path cannot contain '..'.",
+		});
 	});
 
 	it("finds the result folder a changed file belongs to", () => {

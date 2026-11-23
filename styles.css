@@ -121,6 +121,10 @@
 
 /* ── Toolbar button ─────────────────────────────────────────────────── */
 
+.mineru-toolbar-button {
+	flex-shrink: 0;
+}
+
 .mineru-toolbar-button.mineru-no-result {
 	opacity: 0.4;
 }
@@ -188,15 +192,15 @@
 [data-mineru-box-type="image_body"],
 [data-mineru-box-type="chart"],
 [data-mineru-box-type="chart_body"] {
-	--mineru-box-rgb: 77, 217, 13;
+	--mineru-box-rgb: 217, 89, 26;
 }
 [data-mineru-box-type="image_caption"],
 [data-mineru-box-type="chart_caption"] {
-	--mineru-box-rgb: 26, 140, 230;
+	--mineru-box-rgb: 204, 64, 140;
 }
 [data-mineru-box-type="image_footnote"],
 [data-mineru-box-type="chart_footnote"] {
-	--mineru-box-rgb: 242, 115, 26;
+	--mineru-box-rgb: 166, 89, 13;
 }
 [data-mineru-box-type="table"],
 [data-mineru-box-type="table_body"] {

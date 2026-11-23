@@ -18,4 +18,10 @@ describe("box colors", () => {
 		// The fallback of styles.css is the palette's fallback color.
 		expect(css).toContain(`--mineru-box-rgb: ${toRgbChannels(BOX_FALLBACK_COLOR).join(", ")};`);
 	});
+
+	it("keeps Formula/Image and Heading/Image-caption swatch colors distinct", () => {
+		expect(getBoxColor("equation")).not.toBe(getBoxColor("image"));
+		expect(getBoxColor("paragraph_title")).not.toBe(getBoxColor("image_caption"));
+		expect(getBoxColor("image")).not.toBe(getBoxColor("image_footnote"));
+	});
 });

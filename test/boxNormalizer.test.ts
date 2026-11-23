@@ -182,4 +182,34 @@ describe("normalizeMinerUBoxes on legacy pdf_info results", () => {
 		expect(normalizeMinerUBoxes({})).toEqual([]);
 		expect(normalizeMinerUBoxes({ pages: "nope" })).toEqual([]);
 	});
+
+	it("keeps page badges unique when docvortex 2.0 containers use local child indices (BUG-07)", () => {
+		const boxes = normalizeMinerUBoxes({
+			schema: "docvortex.middle.2.0",
+			pages: [
+				{
+					page_idx: 0,
+					blocks: [
+						{ type: "text", index: 0, bbox: [0.1, 0.1, 0.9, 0.2], content: "Intro" },
+						{ type: "text", index: 1, bbox: [0.1, 0.2, 0.9, 0.3], content: "Body" },
+						{
+							type: "image",
+							index: 2,
+							bbox: [0.1, 0.4, 0.9, 0.7],
+							content: [
+								{ type: "image_body", index: 0, bbox: [0.1, 0.4, 0.9, 0.65], image_path: "images/fig.png" },
+								{ type: "image_caption", index: 1, bbox: [0.1, 0.65, 0.9, 0.7], content: "Figure 1" },
+							],
+						},
+					],
+				},
+			],
+		});
+		expect(boxes.map((b) => [b.type, b.pageIndexLabel])).toEqual([
+			["text", 1],
+			["text", 2],
+			["image", 3],
+			["image_caption", 4],
+		]);
+	});
 });
