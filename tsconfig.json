@@ -13,8 +13,19 @@
 		"skipLibCheck": true,
 		"importHelpers": true,
 		"resolveJsonModule": true,
-		"lib": ["DOM", "DOM.Iterable", "ES2022"],
-		"types": ["node"]
+		"lib": [
+			"DOM",
+			"DOM.Iterable",
+			"ES2022"
+		],
+		"types": [
+			"node",
+			"@wdio/globals/types",
+			"wdio-obsidian-service"
+		]
 	},
-	"include": ["src/**/*.ts", "test/**/*.ts"]
+	"include": [
+		"src/**/*.ts",
+		"test/**/*.ts"
+	]
 }

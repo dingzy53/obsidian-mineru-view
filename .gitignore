@@ -8,3 +8,8 @@ data.json
 example/
 # Local planning notes; not part of the published repo.
 PLAN.md
+
+# WebdriverIO E2E
+.obsidian-cache/
+obsidian-versions-lock.txt
+test-vault/.obsidian/
