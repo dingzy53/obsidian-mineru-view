@@ -1,7 +1,7 @@
 {
 	"id": "mineru-view",
 	"name": "MinerU View",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"minAppVersion": "1.13.1",
 	"description": "Show MinerU layout results on your PDFs: block boxes colored by type, reading order, and copy actions for text, formulas, tables and figures.",
 	"author": "Ding Zheng Yuan",

@@ -1,6 +1,6 @@
 {
 	"name": "mineru-view",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Obsidian desktop plugin: show MinerU layout results (block boxes, types, reading order) on PDFs.",
 	"main": "main.js",
 	"scripts": {
