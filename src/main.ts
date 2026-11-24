@@ -23,7 +23,7 @@ export default class MinerUPlugin extends Plugin implements OverlayHost {
 	private readonly controllers = new Map<FileView, OverlayController>();
 
 	override async onload(): Promise<void> {
-		this.settings = mergeSettings(await this.loadData());
+		this.settings = mergeSettings(await this.loadData(), this.app.vault.configDir);
 		this.store = new ResultStore(this.app, () => this.settings.resultsFolder);
 		this.geometry = new PageGeometry(this.app);
 		this.register(() => this.geometry.destroy());
@@ -67,10 +67,20 @@ export default class MinerUPlugin extends Plugin implements OverlayHost {
 
 	openLegend(controller: OverlayController): void {
 		const result = controller.result;
+		if (!result) {
+			const folder = controller.resultFolder ?? "";
+			new Notice(
+				folder
+					? `No MinerU result found for this PDF. Put its output (with middle_json.json) in "${folder}".`
+					: "No MinerU result found for this PDF.",
+				8000,
+			);
+			return;
+		}
 		new LegendModal(this.app, {
 			title: controller.filePath ?? "",
 			resultFolder: controller.resultFolder,
-			types: result ? result.types.map((type) => ({ type, count: result.counts.get(type) ?? 0 })) : null,
+			types: result.types.map((type) => ({ type, count: result.counts.get(type) ?? 0 })),
 			getSettings: () => this.settings,
 			setTypeHidden: (type, hidden) => void this.updateSettings(withTypeHidden(this.settings, type, hidden)),
 			setShowBadges: (value) => void this.updateSettings({ ...this.settings, showIndexBadges: value }),

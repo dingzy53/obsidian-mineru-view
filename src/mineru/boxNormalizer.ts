@@ -98,8 +98,9 @@ function assignPageIndexLabels(boxes: NormalizedBox[]): NormalizedBox[] {
 	}
 	for (const pageBoxes of byPage.values()) {
 		const indexed = pageBoxes.every((box) => typeof box.sourceIndex === "number");
+		const unique = indexed && new Set(pageBoxes.map((box) => box.sourceIndex)).size === pageBoxes.length;
 		pageBoxes.forEach((box, position) => {
-			box.pageIndexLabel = indexed ? (box.sourceIndex as number) + 1 : position + 1;
+			box.pageIndexLabel = unique ? (box.sourceIndex as number) + 1 : position + 1;
 		});
 	}
 	return boxes;
@@ -206,8 +207,12 @@ function emitV2VisualContainer(
 		}
 	}
 	boxes.push(box);
+	const containerIndex = box.sourceIndex;
+	const bodyIndex = body ? getSourceIndex(body) : undefined;
+	const localChildIndices =
+		typeof containerIndex === "number" && typeof bodyIndex === "number" && bodyIndex !== containerIndex;
 	for (const annotation of annotations) {
-		emitV2LeafBox(annotation, normalizeType(rawType(annotation)), pageNumber, boxes);
+		emitV2LeafBox(annotation, normalizeType(rawType(annotation)), pageNumber, boxes, localChildIndices);
 	}
 }
 
@@ -216,6 +221,7 @@ function emitV2LeafBox(
 	type: MinerUBoxType,
 	pageNumber: number,
 	boxes: NormalizedBox[],
+	omitSourceIndex = false,
 ): void {
 	const bbox = getBlockBbox(block);
 	if (!bbox) {
@@ -225,7 +231,7 @@ function emitV2LeafBox(
 	const imagePath = getBlockImagePath(block);
 	const box: NormalizedBox = {
 		rawIndex: boxes.length,
-		sourceIndex: getSourceIndex(block),
+		sourceIndex: omitSourceIndex ? undefined : getSourceIndex(block),
 		pageIndexLabel: 0,
 		page: pageNumber,
 		type,

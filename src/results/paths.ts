@@ -16,12 +16,38 @@ export function cleanFolderPath(value: string): string {
 		.join("/");
 }
 
-/** A usable results root, or null when the value points outside the vault. */
-export function validateResultsFolder(value: unknown): string | null {
-	if (typeof value !== "string") return null;
+export type ResultsFolderCheck =
+	| { ok: true; path: string }
+	| { ok: false; error: string };
+
+/** Checks whether a results root path is valid and inside the visible vault. */
+export function checkResultsFolder(value: unknown, configDir?: string): ResultsFolderCheck {
+	if (typeof value !== "string") return { ok: false, error: "Results folder must be a path." };
+	const rawSegments = value
+		.replace(/\\/g, "/")
+		.split("/")
+		.map((part) => part.trim())
+		.filter((part) => part.length > 0);
+	if (rawSegments.includes("..")) {
+		return { ok: false, error: "Path cannot contain '..'." };
+	}
 	const cleaned = cleanFolderPath(value);
-	if (cleaned.split("/").includes("..")) return null;
-	return cleaned;
+	if (!cleaned) return { ok: true, path: "" };
+
+	const cleanedConfigDir = configDir ? cleanFolderPath(configDir) : "";
+	if (cleanedConfigDir && (cleaned === cleanedConfigDir || cleaned.startsWith(`${cleanedConfigDir}/`))) {
+		return { ok: false, error: "Cannot store results inside the Obsidian configuration folder." };
+	}
+	if (cleaned.split("/").some((part) => part.startsWith("."))) {
+		return { ok: false, error: "Hidden folders starting with '.' are not supported." };
+	}
+	return { ok: true, path: cleaned };
+}
+
+/** A usable results root, or null when the value points outside the vault or into a hidden folder. */
+export function validateResultsFolder(value: unknown, configDir?: string): string | null {
+	const checked = checkResultsFolder(value, configDir);
+	return checked.ok ? checked.path : null;
 }
 
 /**

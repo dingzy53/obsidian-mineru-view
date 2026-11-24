@@ -37,3 +37,4 @@ jobs:
 
       - name: Build
         run: npm run build
+      - run: npm run check:mobile

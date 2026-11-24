@@ -1,6 +1,7 @@
 import { PluginSettingTab, type App, type SettingDefinitionItem } from "obsidian";
 import type MinerUPlugin from "./main";
 import { formatBoxTypeLabel } from "./overlay/boxes";
+import { checkResultsFolder } from "./results/paths";
 import { MAX_FILL_OPACITY, applySettingChange, readSettingValue } from "./settingsModel";
 
 /**
@@ -20,23 +21,25 @@ export class MinerUSettingTab extends PluginSettingTab {
 	}
 
 	override async setControlValue(key: string, value: unknown): Promise<void> {
-		await this.plugin.updateSettings(applySettingChange(this.plugin.settings, key, value));
+		await this.plugin.updateSettings(applySettingChange(this.plugin.settings, key, value, this.app.vault.configDir));
 	}
 
 	override getSettingDefinitions(): SettingDefinitionItem[] {
 		const hiddenTypes = (): string[] => this.plugin.settings.hiddenTypes;
 		return [
 			{
-				type: "group",
-				heading: "Results",
-				items: [
-					{
-						name: "Results folder",
-						desc: "Vault folder with one subfolder per PDF, named like the PDF without “.pdf”, holding MinerU's output (middle_json.json, images). Leave empty for the vault root.",
-						aliases: ["mineru", "output", "middle_json"],
-						control: { type: "text", key: "resultsFolder", placeholder: "MinerU" },
+				name: "Results folder",
+				desc: "Vault folder with one subfolder per PDF, named like the PDF without “.pdf”, holding MinerU's output (middle_json.json, images). Leave empty for the vault root.",
+				aliases: ["mineru", "output", "middle_json"],
+				control: {
+					type: "text",
+					key: "resultsFolder",
+					placeholder: "MinerU",
+					validate: (value) => {
+						const checked = checkResultsFolder(value, this.app.vault.configDir);
+						return checked.ok ? undefined : checked.error;
 					},
-				],
+				},
 			},
 			{
 				type: "group",

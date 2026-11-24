@@ -37,10 +37,10 @@ export function sanitizeFillOpacity(value: unknown): number {
 }
 
 /** Normalises whatever is in `data.json` into a complete settings object. */
-export function mergeSettings(loaded: unknown): MinerUSettings {
+export function mergeSettings(loaded: unknown, configDir?: string): MinerUSettings {
 	const raw = (loaded && typeof loaded === "object" ? loaded : {}) as Partial<Record<keyof MinerUSettings, unknown>>;
 	return {
-		resultsFolder: validateResultsFolder(raw.resultsFolder) ?? DEFAULT_SETTINGS.resultsFolder,
+		resultsFolder: validateResultsFolder(raw.resultsFolder, configDir) ?? DEFAULT_SETTINGS.resultsFolder,
 		defaultMode: OVERLAY_MODES.includes(raw.defaultMode as OverlayMode)
 			? (raw.defaultMode as OverlayMode)
 			: DEFAULT_SETTINGS.defaultMode,
@@ -66,9 +66,14 @@ export function readSettingValue(settings: MinerUSettings, key: string): unknown
  * Returns the settings with one control's value applied, through
  * {@link mergeSettings} so UI values get the same validation as loaded ones.
  */
-export function applySettingChange(settings: MinerUSettings, key: string, value: unknown): MinerUSettings {
+export function applySettingChange(
+	settings: MinerUSettings,
+	key: string,
+	value: unknown,
+	configDir?: string,
+): MinerUSettings {
 	if (!SETTING_KEYS.has(key)) return settings;
-	return mergeSettings({ ...settings, [key]: value });
+	return mergeSettings({ ...settings, [key]: value }, configDir);
 }
 
 /** The next mode when cycling: all → hover → off → all. */

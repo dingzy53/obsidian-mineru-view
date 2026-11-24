@@ -3,7 +3,7 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
 	{
-		ignores: ["main.js", "node_modules/**", "example/**"],
+		ignores: ["main.js", "node_modules/**", "example/**", ".obsidian-cache/**", "wdio.conf.mts", "scripts/**", "test/e2e/**", "test-vault/**"],
 	},
 	...tseslint.configs.recommended,
 	{
